@@ -1,0 +1,17 @@
+
+### 독서 기록 저장 테스트
+POST http://localhost:3000/api/records
+Content-Type: application/json
+
+{
+  "title": "어린 왕자",
+  "author": "앙투안 드 생텍쥐페리",
+  "summary": "어린 왕자가 여러 별을 여행하며 다양한 인물을 만나는 이야기",
+  "impression": "소중한 관계와 책임의 의미를 생각하게 되었다.",
+  "completed_at": "2026-11-03"
+}
+
+###
+
+### 독서 기록 목록 조회 테스트
+GET http://localhost:3000/api/records
