@@ -64,6 +64,7 @@ function Header() {
           <Navigation aria-label="주요 메뉴">
             <MenuLink to="/" end>투데이</MenuLink>
             <MenuLink to="/library">내서재</MenuLink>
+            <MenuLink to="/mypage">마이페이지</MenuLink>
           </Navigation>
         )}
         <UserArea>

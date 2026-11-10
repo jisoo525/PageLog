@@ -101,9 +101,25 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// 현재 로그인 사용자
-app.get("/api/auth/me", (req, res) => {
-  res.json({ user: req.session.user || null });
+// 현재 로그인 사용자 조회
+app.get("/api/auth/me", requireAuth, async (req, res) => {
+  try {
+    const [[user]] = await pool.query(
+      `SELECT id, username, nickname, created_at
+       FROM users
+       WHERE id = ?`,
+      [req.session.user.id]
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "회원을 찾을 수 없습니다." });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    console.error("회원 정보 조회 오류:", error);
+    res.status(500).json({ message: "회원 정보 조회에 실패했습니다." });
+  }
 });
 
 // 로그아웃
@@ -281,4 +297,68 @@ app.get("/api/recommendations", requireAuth, async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`서버 실행 중: http://localhost:${PORT}`);
+});
+
+// 회원 정보 수정
+app.put("/api/auth/me", requireAuth, async (req, res) => {
+  const nickname = String(req.body.nickname || "").trim();
+
+  if (nickname.length < 2 || nickname.length > 12) {
+    return res.status(400).json({
+      message: "닉네임은 2~12자로 입력해 주세요."
+    });
+  }
+
+  try {
+    await pool.execute(
+      `UPDATE users
+       SET nickname = ?
+       WHERE id = ?`,
+      [nickname, req.session.user.id]
+    );
+
+    // 세션의 닉네임도 변경
+    req.session.user.nickname = nickname;
+
+    res.json({
+      message: "회원 정보가 수정되었습니다.",
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error("회원 정보 수정 오류:", error);
+    res.status(500).json({
+      message: "회원 정보 수정에 실패했습니다."
+    });
+  }
+});
+
+
+// 회원 탈퇴
+app.delete("/api/auth/me", requireAuth, async (req, res) => {
+  try {
+    await pool.execute(
+      `DELETE FROM users
+       WHERE id = ?`,
+      [req.session.user.id]
+    );
+
+    req.session.destroy((error) => {
+      if (error) {
+        console.error("세션 삭제 오류:", error);
+        return res.status(500).json({
+          message: "회원 탈퇴 후 세션 삭제에 실패했습니다."
+        });
+      }
+
+      res.clearCookie("connect.sid");
+      res.json({
+        message: "회원 탈퇴가 완료되었습니다."
+      });
+    });
+  } catch (error) {
+    console.error("회원 탈퇴 오류:", error);
+    res.status(500).json({
+      message: "회원 탈퇴에 실패했습니다."
+    });
+  }
 });

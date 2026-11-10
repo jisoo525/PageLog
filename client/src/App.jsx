@@ -8,6 +8,7 @@ import Library from './pages/Library';
 import RecordCreate from './pages/RecordCreate';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import MyPage from './pages/MyPage';
 import './index.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/library" element={<Library />} />
                 <Route path="/records/new" element={<RecordCreate />} />
+                <Route path="/mypage" element={<MyPage />} />
                 <Route path="/records/:id/edit" element={<RecordCreate />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
